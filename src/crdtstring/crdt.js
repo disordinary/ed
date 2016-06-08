@@ -47,7 +47,7 @@ class CRDTString {
         while( char ) {
             if( char.visible > 0 ) {
                 return_string.push(char.toString());
-            } 
+            }
             char = char.next;
         }
         //console.log( this._chars );
@@ -76,6 +76,7 @@ class CRDTString {
         if( updateObj.verb == "put" ) {
             this.insert( updateObj.clock , updateObj.char, this._chars[ updateObj.next ] );
         } else if( updateObj.verb == 'del' ) {
+            console.log( 'del' , updateObj.clock );
             this.del( updateObj.clock );
         }
     }
@@ -90,7 +91,6 @@ class CRDTString {
     }
 
     del( clock ) {
-        console.log( "DC" , clock );
         this._chars[ clock ].visible=-1;
         return {
             verb : 'del',
@@ -125,6 +125,7 @@ class CRDTString {
         for( let char of o.chars ) {
             //console.log( char );
             let _char = new CRDTChar(char.value , char.id);
+            _char.visible = char.visible;
             _char.next = char.next;
             _char.previous = char.previous;
             this._chars[ char.id ] = _char;
@@ -158,6 +159,19 @@ class CRDTChar {
 
     toString( ) {
         return this.value;
+    }
+
+    nextVisible( ) {
+        let next = this.next;
+        if( !next ) {
+            return;
+        }
+        if( next.visible ) {
+            return this;
+        }
+
+        return next.nextVisible( );
+
     }
 }
 

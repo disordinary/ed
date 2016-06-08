@@ -1,155 +1,15 @@
 <html>
 <head>
-    <script src="http://localhost:8080/Clock.js"></script>
-    <script src="http://localhost:8080/CRDT.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+
+    <script src="/Clock.js"></script>
+    <script src="/CRDT.js"></script>
+    <script src="/static/Render.js"></script>
 
 
-    <script src="http://localhost:8080/socket.io/socket.io.js"></script>
-    <script>
-        var socket = io.connect('http://localhost:8080');
-        var crdt = new CRDTString();
-        var user;
-        var clock;
-        var cursor_pos = 1;
-        socket.on('youAre' , ( userID ) => {
-            addHappening("Recieved user id of: " + userID );
-           user = userID;
-            clock = new Clock( userID );
-        } ) ;
-        socket.on('document' , ( data ) => {
-            document.getElementById('doc');
-            crdt.fromJSON( data );
-            doc.innerHTML = crdt.toString().replace(/(?:\r\n|\r|\n)/g, '<br />');;
-            addHappening("Recieved document" );
-        } ) ;
 
-        socket.on('update' , ( data ) => {
-            if( data.clock.split('/')[0] != clock._user_id )
-            {
-                crdt.update(data);
-                doc.innerHTML = crdt.toString().replace(/(?:\r\n|\r|\n)/g, '<br />');;
-                addHappening("Recieved update: " + JSON.stringify( data ) );
-            }
-        });
+    <script src="/static/app.js"></script>
 
-    </script>
-    <script>
-        var emsize;
-        var cursors = [ ];
-        window.onload = ( ) => {
-            emsize = measureText( );
-            let keyInput = document.getElementById('keyinput');
-            keyInput.onkeypress = ( eargs ) => {
-
-                if( eargs.charCode < 20 ) return;
-                let input = eargs.target;
-                let update = crdt.insert(clock , String.fromCharCode(eargs.charCode) , crdt.getCharAt( cursors[0].offset ) );
-                socket.emit( 'update', update );
-                addHappening("Sent update: " + JSON.stringify( update ) );
-
-
-                input.value = "";
-                doc.innerHTML = crdt.toString().replace(/(?:\r\n|\r|\n)/g, '<br />');;
-                cursors[ 0 ].move(1);
-               // socket.emit('update', JSON.stringify( { verb : 'put' , clock : "2/1" , next : "0/6" , char : '@' } ););
-            }
-
-            keyInput.onkeydown = (eargs ) => {
-                switch( eargs.keyCode ) {
-                    case 39:
-                        //right
-                        cursors[ 0 ].move( 1 );
-                        break;
-                    case 37:
-                        //left
-                        cursors[ 0 ].move( -1 );
-                        break;
-
-                    case 8:
-                        //backspace
-                        let update = crdt.del( crdt.getCharAt( cursors[0].offset ).id );
-                        socket.emit( 'update', update );
-                        addHappening("Sent update: " + JSON.stringify( update ) );
-                        cursors[ 0 ].move( -1 );
-                        doc.innerHTML = crdt.toString().replace(/(?:\r\n|\r|\n)/g, '<br />');;
-
-                        break;
-                }
-                return true;
-            }
-
-            keyInput.focus();
-            keyInput.onblur = ( ) => keyInput.focus ;
-
-            window.setInterval( ( ) => { keyInput.focus() } , 500);
-
-           cursors.push(createCursor( ) );
-           // cursors[ 0 ].move( 3 );
-
-
-        }
-
-        function measureText( ) {
-            let measurer = document.createElement("span");
-            measurer.id = 'measurer';
-            measurer.innerHTML = 'MMM<br />MMM<br />MMM';
-            document.body.appendChild( measurer );
-            let w = measurer.offsetWidth / 3;
-            let h = measurer.offsetHeight / 3;
-            document.body.removeChild( measurer );
-            return {
-                w , h
-            };
-        }
-        function getPositionOfOffset( offset ) {
-            let x = 0;
-            let y = 0;
-            let lastSpace;
-            let text = crdt.toString();
-            let domdoc = document.getElementById('doc');
-            let wrapWidth = domdoc.offsetWidth;
-            for( let i = 0; i < offset; i++ ) {
-                if( text[ i ] === ' ' ) {
-                    lastSpace = i;
-                }
-                x += emsize.w;
-                if( x > wrapWidth ) {
-                    x = 0;
-                    y += emsize.h;
-                    i = lastSpace;
-                }
-            }
-            y += 10; //just the offset of the div from padding and margins
-
-            return { x , y };
-        }
-
-        function createCursor( ) {
-            let cursor = document.createElement('div');
-            cursor.className = 'cursor';
-            document.body.appendChild(cursor);
-            cursor.style.height = emsize.h;
-            return {
-                cursor,
-                offset : 1,
-                move : function( toMove ) {
-                    this.offset += toMove;
-                    let position = getPositionOfOffset(this.offset);
-
-                    this.cursor.style.left = position.x + 'px';
-                    this.cursor.style.top = position.y + 'px';
-                 }
-            }
-        }
-
-        function addHappening( text ) {
-            let li = document.createElement( 'li' );
-            li.innerHTML = text;
-            document.getElementById('happenings').appendChild( li );
-            var holder = document.getElementById("happeningsHolder");
-            holder.scrollTop = holder.scrollHeight;
-        }
-    </script>
     <style>
         body {
 
@@ -178,6 +38,7 @@
             padding:0;
             height:50px;
             width:3px;
+            display: none;
         }
         #keyinput {
             height: 0px;
@@ -196,6 +57,14 @@
             padding:0;
             margin:0;
             overflow:auto;
+        }
+        #cursor {
+            /*display: inline;
+            position: absolute;*/
+
+            outline: 1px solid black;
+
+            width:3px;
         }
     </style>
 </head>
