@@ -74,10 +74,10 @@ window.onload = ( ) => {
                 break;
             case 13:
                 //enter
-                var update = crdt.insert(clock , '<br />' , crdt.getCharAt( cursors[0].offset ) );
+                var update = crdt.insert(clock , '\n' , cursors[0].character );
                 socket.emit( 'update', update );
                 addHappening("Sent update: " + JSON.stringify( update ) );
-                cursors[ 0 ].move( 1 );
+               // cursors[ 0 ].move( 1 );
                 doc.innerHTML = render(crdt , cursors[ 0 ] );
                 break;
         }
