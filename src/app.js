@@ -26,6 +26,13 @@ app.get('/Clock.js' , ( req , res ) => {
 app.get('/CRDT.js' , ( req , res ) => {
     res.sendFile(__dirname + '/crdtstring/crdt.js');
 } );
+
+
+app.get('/rtc.js' , ( req , res ) => {
+    console.log( __dirname + '/../node_modules/rtc/dist/rtc.js' );
+    res.sendFile(__dirname + '/../node_modules/rtc/dist/rtc.js');
+} );
+
 io.on('connection', function (socket) {
 
 
