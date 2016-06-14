@@ -1,3 +1,4 @@
+var path = require('path');
 var express = require('express');
 var app = express();
 var server = require('http').Server(app);
@@ -26,6 +27,13 @@ app.get('/Clock.js' , ( req , res ) => {
 app.get('/CRDT.js' , ( req , res ) => {
     res.sendFile(__dirname + '/crdtstring/crdt.js');
 } );
+
+
+app.get('/rtc.js' , ( req , res ) => {
+
+    res.sendFile(path.resolve( __dirname + '/../node_modules/rtc/dist/rtc.js') );
+} );
+
 io.on('connection', function (socket) {
 
 
